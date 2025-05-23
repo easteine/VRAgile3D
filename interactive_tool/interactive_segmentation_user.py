@@ -1,4 +1,4 @@
-from interactive_tool.gui import InteractiveSegmentationGUI
+from interactive_tool.server import InteractiveSegmentationGUI
 import abc
 from datetime import datetime
 import numpy as np
