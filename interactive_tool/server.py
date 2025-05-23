@@ -13,7 +13,7 @@ import zlib
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class InteractiveSegmentationGUI:
+class InteractiveSegmentationVR:
     """VR Server - syncs colors/labels with geometry on VR headset"""
     
     def __init__(self, segmentation_model, host='0.0.0.0', port=8765):
