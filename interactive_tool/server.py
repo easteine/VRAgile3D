@@ -44,7 +44,7 @@ class InteractiveSegmentationVR:
         self.click_positions = {"0": []}
         self.cur_obj_idx = -1
         self.cur_obj_name = None
-        self.auto_infer = True
+        self.auto_infer = False
         self.num_clicks = 0
         self.cube_size = 0.02
         self.vis_mode_semantics = True
@@ -401,7 +401,8 @@ class InteractiveSegmentationVR:
 
         click_type = data.get("click_type", "object")
         point_index = data.get("point_index")  # VR sends exact point index
-        position = data.get("position", [0, 0, 0])  # For fallback
+        # position = data.get("position", [0, 0, 0])  # For fallback
+        position = self.coordinates[point_index]
         obj_id = data.get("object_id", 1)
 
         print(f"VR {click_type} click - Point index: {point_index}")
@@ -416,8 +417,10 @@ class InteractiveSegmentationVR:
         #     click_position = self.coordinates[
         #         self._find_nearest_point(self.coordinates, position)
         #     ].tolist()
-        point_idx = point_index
-        click_position = self.coordinates[point_idx].tolist()
+        point_idx = self._find_nearest_point(self.coordinates_qv, position)
+        click_position = self.coordinates[
+            self._find_nearest_point(self.coordinates, position)
+        ].tolist()
 
         if click_type == "background":
             if "0" not in self.click_idx:
@@ -587,9 +590,9 @@ class InteractiveSegmentationVR:
             chunk_colors = colors[start_idx:end_idx]
 
             # Compress the chunk
-            # compressed_data = zlib.compress(chunk_colors.tobytes())
-            # encoded_data = base64.b64encode(compressed_data).decode("utf-8")
-            encoded_data = base64.b64encode(chunk_colors.tobytes()).decode("utf-8")
+            compressed_data = zlib.compress(chunk_colors.tobytes())
+            encoded_data = base64.b64encode(compressed_data).decode("utf-8")
+            # encoded_data = base64.b64encode(chunk_colors.tobytes()).decode("utf-8")
 
             message = {
                 "type": "update_colors_chunk",

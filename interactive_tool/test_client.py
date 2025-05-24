@@ -209,7 +209,7 @@ class VRTestClient:
         await self.send_message({
             "type": "click",
             "click_type": "object",
-            "point_index": 1000,  # Specific point index
+            "point_index": 37206,  # Specific point index
             "position": [0.1, 0.1, 0.1],  # Fallback position
             "object_id": 1
         })
