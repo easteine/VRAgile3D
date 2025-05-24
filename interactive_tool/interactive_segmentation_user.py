@@ -217,6 +217,9 @@ class UserInteractiveSegmentationModel(abc.ABC):
             # load next scene
             self.scene_name, self.scene_point_type, self.points, labels_full_ori, record_file, mask_folder, click_folder, objects = next(self.dataloader_test)
             self.reset_masks()
+        elif not previous and not nxt:
+            self.scene_name, self.scene_point_type, self.points, labels_full_ori, record_file, mask_folder, click_folder, objects = self.dataloader_test.load_scene(0)
+            self.reset_masks()
         elif previous and prev:
             # load previous scene
             self.scene_name, self.scene_point_type, self.points, labels_full_ori, record_file, mask_folder, click_folder, objects = self.dataloader_test.load_scene(curr_scene_idx-1)
