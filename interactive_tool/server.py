@@ -1,4 +1,5 @@
 import asyncio
+import torch
 import websockets
 import json
 import numpy as np
@@ -43,7 +44,7 @@ class InteractiveSegmentationVR:
         self.click_positions = {"0": []}
         self.cur_obj_idx = -1
         self.cur_obj_name = None
-        self.auto_infer = False
+        self.auto_infer = True
         self.num_clicks = 0
         self.cube_size = 0.02
         self.vis_mode_semantics = True
@@ -85,6 +86,7 @@ class InteractiveSegmentationVR:
         # Store coordinate data for click processing
         self.coordinates = coords
         self.coordinates_qv = coords_qv
+        self.ori_coords = torch.Tensor(self.coordinates).to(self.coordinates_qv.device)
 
         # Initialize objects
         self.objects = list(object_names)
@@ -405,15 +407,17 @@ class InteractiveSegmentationVR:
         print(f"VR {click_type} click - Point index: {point_index}")
 
         # Use point index if provided, otherwise find nearest
-        if point_index is not None:
-            point_idx = point_index
-            click_position = position
-        else:
-            # Fallback to position-based lookup
-            point_idx = self._find_nearest_point(self.coordinates_qv, position)
-            click_position = self.coordinates[
-                self._find_nearest_point(self.coordinates, position)
-            ].tolist()
+        # if point_index is not None:
+        #     point_idx = point_index
+        #     click_position = position
+        # else:
+        #     # Fallback to position-based lookup
+        #     point_idx = self._find_nearest_point(self.coordinates_qv, position)
+        #     click_position = self.coordinates[
+        #         self._find_nearest_point(self.coordinates, position)
+        #     ].tolist()
+        point_idx = point_index
+        click_position = self.coordinates[point_idx].tolist()
 
         if click_type == "background":
             if "0" not in self.click_idx:
@@ -643,4 +647,3 @@ class InteractiveSegmentationVR:
         }
 
         await self._send_message(message)
-
