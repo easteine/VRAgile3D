@@ -229,6 +229,10 @@ class UserInteractiveSegmentationModel(abc.ABC):
             self.reset_masks()
         else: 
             return
+
+        if self.scene_point_type == "pointcloud":
+            self.load_next_scene(quit, previous)
+            return
         
         self.record_file = record_file
         self.mask_folder  = mask_folder
