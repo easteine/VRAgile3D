@@ -109,6 +109,9 @@ class UserInteractiveSegmentationModel(abc.ABC):
 
                 print(line)
         
+        # TODO: send mask
+        self.visualizer.update_mask(pred_full)
+
         # update gui and save new object mask
         self.visualizer.update_colors(colors=self.get_colors(reload_masks=False)) # self.object_mask is already up to date
         negative_semantic = self.object_mask[:, 2].copy() * 2 # negative semantic is 2, positive semantic is 1

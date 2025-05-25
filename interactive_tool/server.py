@@ -33,6 +33,7 @@ class InteractiveSegmentationVR:
         # Scene state (minimal - no geometry)
         self.curr_scene_name = None
         self.num_points = 0
+        self.mask = None
         self.colors = None
         self.points = None
         self.faces = None
@@ -44,7 +45,7 @@ class InteractiveSegmentationVR:
         self.click_positions = {"0": []}
         self.cur_obj_idx = -1
         self.cur_obj_name = None
-        self.auto_infer = False
+        self.auto_infer = True
         self.num_clicks = 0
         self.cube_size = 0.02
         self.vis_mode_semantics = True
@@ -151,6 +152,10 @@ class InteractiveSegmentationVR:
 
         # Tell VR to load new scene
         self.command_queue.put(("send_scene_info", None))
+
+    def update_mask(self, mask):
+        self.mask = mask.detach().cpu().numpy()
+        self.command_queue.put(("send_mask", mask))
 
     def update_colors(self, colors):
         """Update colors - main sync operation"""
@@ -316,6 +321,8 @@ class InteractiveSegmentationVR:
 
                 if command == "send_scene_info":
                     await self._send_scene_info()
+                elif command == "send_mask":
+                    await self._send_mask(data)
                 elif command == "send_colors":
                     await self._send_colors(data)
                 elif command == "send_objects":
@@ -560,6 +567,57 @@ class InteractiveSegmentationVR:
         await self._send_message(message)
         print(f"Sent scene info: {self.curr_scene_name}")
 
+    async def _send_mask(self, mask=None):
+        """Send color array"""
+        if mask is None:
+            mask = self.mask
+
+        try:
+            # Send colors in chunks to avoid WebSocket size limits
+            await self._send_mask_chunked(mask)
+            print("Sent mask update (chunked)")
+        except Exception as e:
+            logger.error(f"mask update error: {e}")
+
+    async def _send_mask_chunked(self, mask):
+        """chunked to avoid message limits"""
+        if hasattr(mask, "cpu"):
+            mask = mask.cpu().numpy()
+
+        mask = np.array(mask, np.uint8)  # Use float32 for efficiency
+        total_points = len(mask)
+
+        # Calculate number of chunks needed
+        num_chunks = (total_points + self.chunk_size - 1) // self.chunk_size
+
+        for chunk_idx in range(num_chunks):
+            start_idx = chunk_idx * self.chunk_size
+            end_idx = min(start_idx + self.chunk_size, total_points)
+
+            chunk_mask = mask[start_idx:end_idx]
+
+            # Compress the chunk
+            # compressed_data = zlib.compress(chunk_colors.tobytes())
+            # encoded_data = base64.b64encode(compressed_data).decode("utf-8")
+            encoded_data = base64.b64encode(chunk_mask.tobytes()).decode("utf-8")
+
+            message = {
+                "type": "update_mask_chunk",
+                "chunk_index": chunk_idx,
+                "total_chunks": num_chunks,
+                "start_index": start_idx,
+                "end_index": end_idx,
+                "data": encoded_data,
+                "shape": chunk_mask.shape,
+                "dtype": str(chunk_mask.dtype),
+                "compressed": False,
+            }
+
+            await self._send_message(message)
+
+            # Small delay between chunks to avoid overwhelming the client
+            await asyncio.sleep(0.01)
+
     async def _send_colors(self, colors=None):
         """Send color array"""
         if colors is None:
@@ -590,9 +648,9 @@ class InteractiveSegmentationVR:
             chunk_colors = colors[start_idx:end_idx]
 
             # Compress the chunk
-            compressed_data = zlib.compress(chunk_colors.tobytes())
-            encoded_data = base64.b64encode(compressed_data).decode("utf-8")
-            # encoded_data = base64.b64encode(chunk_colors.tobytes()).decode("utf-8")
+            # compressed_data = zlib.compress(chunk_colors.tobytes())
+            # encoded_data = base64.b64encode(compressed_data).decode("utf-8")
+            encoded_data = base64.b64encode(chunk_colors.tobytes()).decode("utf-8")
 
             message = {
                 "type": "update_colors_chunk",
@@ -604,7 +662,7 @@ class InteractiveSegmentationVR:
                 "shape": chunk_colors.shape,
                 "dtype": str(chunk_colors.dtype),
                 "semantics_mode": self.vis_mode_semantics,
-                "compressed": True,
+                "compressed": False,
             }
 
             await self._send_message(message)
