@@ -134,9 +134,13 @@ class InteractiveSegmentationVR:
         self.curr_scene_name = scene_name
         self.num_points = len(coords)
         self.colors = colors.copy()
+        self.points = point_object.vertices
+        self.faces = point_object.triangles
         self.original_colors = original_colors.copy()
+
         self.coordinates = coords
         self.coordinates_qv = coords_qv
+        self.ori_coords = torch.Tensor(self.coordinates).to(self.coordinates_qv.device)
 
         # Reset interaction state
         self.click_idx = {"0": []}
