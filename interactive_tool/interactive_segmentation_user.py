@@ -1,4 +1,5 @@
 from interactive_tool.server import InteractiveSegmentationVR as InteractiveSegmentationGUI
+# from interactive_tool.gui import InteractiveSegmentationGUI
 import abc
 from datetime import datetime
 import numpy as np
