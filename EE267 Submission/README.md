@@ -1,15 +1,8 @@
 # Installation Instruction --- Adapted from Agile3D
 Adaptation by Emily Steiner, Codey Sun, Liyuan Zhu
-Reachable at easteine@stanford.edu, 
+Reachable at easteine@stanford.edu, codeysun@stanford.edu, liyzhu@stanford.edu
 
-### Step 0: setup Files
-Clone Agile3D:
-```shell
-git clone https://github.com/ywyue/AGILE3D.git
-cd AGILE3D
-```
-
-Unzip the project files provided. Within the Agile3D repo, replace the `interactive_tool` directory with the unzipped version (replacing all files). The files are as follows: 
+Major Files: 
 code_root/
 └── interactive_tool/
     └── dataloader.py: inherited from AGILE3D to lead scenes
@@ -19,7 +12,21 @@ code_root/
     └── test_client.py: test client used to test the websocket server without VR client 
     └── utils.py: inherited utils from Agile3D 
 └── Unity/
+    └── Assets/
+        └── binplymesh.cs: for mesh loading
+        └── RayClickViz.cs: for point clicking (ray mesh intersection)
+        └── MeshDetacher.cs: creating submeshes for editing
+        
 
+## Backend Segmentation Model and Server Setup
+### Step 0: setup Files
+Clone Agile3D:
+```shell
+git clone https://github.com/ywyue/AGILE3D.git
+cd AGILE3D
+```
+
+Unzip the project files provided. Within the Agile3D repo, replace the `interactive_tool` directory with the unzipped version of `interactive_tool` (replacing all files). 
 
 ### Step 1: create an environment
 ```shell
@@ -60,12 +67,12 @@ pip install websockets
 
 ## Preparing the Backend Model  
 
-### Step 1: download pretained model
+### Step 1: download pretained model (from Agile3D)
 Download the [**model**](https://polybox.ethz.ch/index.php/s/RnB1o8X7g1jL0lM) and move it to the ```weights``` folder.
 
 The model was only trained on [ScanNet40](http://www.scan-net.org/) training set, but it can also be used to segment scenes from other datasets, e.g., [S3DIS](http://buildingparser.stanford.edu/dataset.html), [ARKitScenes](https://github.com/apple/ARKitScenes) and even outdoor scans, [KITTI-360](https://www.cvlibs.net/datasets/kitti-360/).
 
-### Step 2: download sample data
+### Step 2: download sample data (from Agile3D)
 [**Sample data link**](https://polybox.ethz.ch/index.php/s/HMhuyJwJkPXxP3f)
 
 The data should be organized as follows:
@@ -85,16 +92,14 @@ Note:
 - ```scan.ply```: the 3D scan file, which can be a mesh or a point cloud file.
 - ```label.ply``` (optional): the label file which should contain a 'label' attribute that indicates the instance id (starting from 1, 2, 3 ...) of each point. This file is optional. If provided, the system will automatically record the segmentation IoU.
 
-Here we provide some samples from ScanNet, S3DIS, KITTI-360 (with label) and samples from ARKitScenes (without label). **You may also want to try your own scans!** Note for large-scale scans, you may need to crop them into a smaller part in case out of memory.
 
-
-## Running the Application 
+## Running the Backend and Server 
 ### Step 1: Run the Backend Model and Server
 Run  the following command:
 ```shell
 python run_UI.py --user_name=test_user --pretraining_weights=weights/checkpoint1099.pth --dataset_scenes=data/interactive_dataset
 ```
-### Step 1.1: Check the Server with the test client 
+### Step 2: Check the Server with the test client 
 ```shell
 python interactive_tool/test_client.py 
 ```
