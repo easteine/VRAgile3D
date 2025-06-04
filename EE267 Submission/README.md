@@ -98,3 +98,12 @@ python run_UI.py --user_name=test_user --pretraining_weights=weights/checkpoint1
 ```shell
 python interactive_tool/test_client.py 
 ```
+
+## Unity Application Setup
+
+To run the Unity project:
+
+- First create a blank XR application in Unity (tested on version 6000.1.2f1).
+- Then, copy all the files from the Unity subdirectory to the project directory.
+- Copy the downloaded sample data to `Assets/Meshes`
+- Run the Unity project after running the backend server.
