@@ -45,4 +45,5 @@ If you run into issues, please also refer to their [official instructions](https
 ### Step 4: install other packages
 ```shell
 pip install open3d
+pip install websockets
 ```
